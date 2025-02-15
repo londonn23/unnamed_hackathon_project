@@ -61,6 +61,45 @@ class _MyElevatedButtonState extends State<MyElevatedButton> {
   }
 }
 
+class BoldTextFormatter extends StatelessWidget {
+  final String text;
+
+  const BoldTextFormatter({super.key, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    final RegExp boldPattern =
+        RegExp(r'\*\*(.*?)\*\*'); // Regex to detect **text**
+    final List<TextSpan> spans = [];
+    int lastMatchEnd = 0;
+
+    boldPattern.allMatches(text).forEach((match) {
+      // Add normal text before the match
+      if (match.start > lastMatchEnd) {
+        spans.add(TextSpan(text: text.substring(lastMatchEnd, match.start)));
+      }
+
+      // Add bold text
+      spans.add(TextSpan(
+        text: match.group(1), // Extract text inside **
+        style: const TextStyle(fontWeight: FontWeight.bold),
+      ));
+
+      lastMatchEnd = match.end;
+    });
+
+    // Add remaining text after last match
+    if (lastMatchEnd < text.length) {
+      spans.add(TextSpan(text: text.substring(lastMatchEnd)));
+    }
+
+    return Text.rich(
+      TextSpan(children: spans),
+      style: TextStyle(fontSize: 20),
+    );
+  }
+}
+
 class ChatBot extends StatefulWidget {
   const ChatBot({super.key});
 
@@ -74,7 +113,12 @@ class _ChatBotState extends State<ChatBot> {
   bool paperState = false;
   bool anySelected = false;
 
-  final TextEditingController _userInput = TextEditingController();
+  String glassPrompt = "";
+  String plasticPrompt = "";
+  String paperPrompt = "";
+  String prompt =
+      "In short words, give a simple to follow step-by-step instruction on how to recycle the following items, give more than 5 steps";
+
   final apiKey = 'AIzaSyAdMqSVmk1Jv5W_qj25x92eUk8h7cHgkS0';
   String? response = "Generated text will be displayed here";
 
@@ -89,7 +133,7 @@ class _ChatBotState extends State<ChatBot> {
   }
 
   void _sendMessage() async {
-    String userMessage = _userInput.text.trim();
+    String userMessage = prompt;
     if (userMessage.isNotEmpty) {
       setState(() {
         response = "generating...";
@@ -98,90 +142,118 @@ class _ChatBotState extends State<ChatBot> {
       setState(() {
         response = botResponse ?? "Error";
       });
-      _userInput.clear();
+      prompt =
+          "In short words, give a step-by-step (minimum 6 steps) instruction on how to recycle the following items";
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.sizeOf(context).width;
-    final screenHeight = MediaQuery.sizeOf(context).height;
 
     return MaterialApp(
       home: SafeArea(
         child: Scaffold(
-          body: Center(
-            child: Column(
-              children: [
-                Text(
-                  "What are you recycling?",
-                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-                ),
-                Padding(padding: EdgeInsets.only(top: 20)),
-                Row(
-                  children: [
-                    SizedBox(width: 10),
-                    Expanded(
-                        child: MyElevatedButton(
-                            buttonState: glassState,
-                            onPressed: () {
+            body: Center(
+              child: Column(
+                children: [
+                  Text(
+                    "What are you recycling?",
+                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+                  ),
+                  Padding(padding: EdgeInsets.only(top: 20)),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                          color: Color.fromRGBO(235, 241, 231, 1.0)),
+                      child: Row(
+                        children: [
+                          SizedBox(width: 10),
+                          Expanded(
+                              child: MyElevatedButton(
+                                  buttonState: glassState,
+                                  onPressed: () {
+                                    setState(() {
+                                      glassState = !glassState;
+                                    });
+                                  },
+                                  child: Text("GLASS"))),
+                          SizedBox(width: 20),
+                          Expanded(
+                              child: MyElevatedButton(
+                                  buttonState: plasticState,
+                                  onPressed: () {
+                                    setState(() {
+                                      plasticState = !plasticState;
+                                    });
+                                  },
+                                  child: Text("PLASTIC"))),
+                          SizedBox(width: 20),
+                          Expanded(
+                              child: MyElevatedButton(
+                                  buttonState: paperState,
+                                  onPressed: () {
+                                    setState(() {
+                                      paperState = !paperState;
+                                    });
+                                  },
+                                  child: Text("PAPER"))),
+                          SizedBox(width: 10),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Padding(padding: EdgeInsets.only(top: 50)),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 300, bottom: 8),
+                    child: Container(
+                      width: 100,
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all()),
+                      child: TextButton(
+                          onPressed: () {
+                            if (glassState == true ||
+                                paperState == true ||
+                                plasticState == true) {
+                              anySelected = true;
+                              glassPrompt = glassState ? "\nGlass" : "";
+                              paperPrompt = paperState ? "\nPaper" : "";
+                              plasticPrompt = plasticState ? "\nPlastic" : "";
+                              prompt +=
+                                  glassPrompt + paperPrompt + plasticPrompt;
                               setState(() {
-                                glassState = !glassState;
+                                _sendMessage();
+                                glassState = false;
+                                paperState = false;
+                                plasticState = false;
                               });
-                            },
-                            child: Text("GLASS"))),
-                    SizedBox(width: 20),
-                    Expanded(
-                        child: MyElevatedButton(
-                            buttonState: plasticState,
-                            onPressed: () {
-                              setState(() {
-                                plasticState = !plasticState;
-                              });
-                            },
-                            child: Text("PLASTIC"))),
-                    SizedBox(width: 20),
-                    Expanded(
-                        child: MyElevatedButton(
-                            buttonState: paperState,
-                            onPressed: () {
-                              setState(() {
-                                paperState = !paperState;
-                              });
-                            },
-                            child: Text("PAPER"))),
-                    SizedBox(width: 10),
-                  ],
-                ),
-                Padding(padding: EdgeInsets.only(top: 50)),
-                Padding(
-                  padding: const EdgeInsets.only(left: 300, bottom: 8),
-                  child: Container(
-                    width: 100,
+                            } else {
+                              anySelected = false;
+                            }
+                          },
+                          child: Text(
+                            "Send",
+                            style: TextStyle(fontSize: 20),
+                          )),
+                    ),
+                  ),
+                  Container(
+                    width: 400,
+                    height: 500,
                     decoration: BoxDecoration(
+                        border: Border.all(),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all()),
-                    child: TextButton(
-                        onPressed: () {},
-                        child: Text(
-                          "Send",
-                          style: TextStyle(fontSize: 20),
-                        )),
+                        color: Color.fromRGBO(180, 202, 164, 1.0)),
+                    child: SingleChildScrollView(
+                      child: BoldTextFormatter(text: response ?? ""),
+                    ),
                   ),
-                ),
-                Container(
-                  width: 400,
-                  height: 500,
-                  decoration: BoxDecoration(border: Border.all()),
-                  child: SingleChildScrollView(
-                    child: Text(response ?? ""),
-                  ),
-                ),
-                Padding(padding: EdgeInsets.only(top: 50)),
-              ],
+                  Padding(padding: EdgeInsets.only(top: 50)),
+                ],
+              ),
             ),
-          ),
-        ),
+            backgroundColor: Color.fromRGBO(222, 232, 216, 1)),
       ),
       debugShowCheckedModeBanner: false,
     );
