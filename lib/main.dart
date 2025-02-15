@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:unnamed_hackathon_project/test_page.dart';
 import 'trash_selection.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 
@@ -14,43 +15,33 @@ class MainApp extends StatefulWidget {
 }
 
 class _MainAppState extends State<MainApp> {
-  int _selectedIndex = 0;
-  final PageController _pageController = PageController();
+  PageController pCont = PageController(initialPage: 0);
+  int selectedPage = 0;
 
   void _onTabChange(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-    _pageController.jumpToPage(index); // Navigate using PageView
+    pCont.jumpToPage(index); // Navigate using PageView
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: SafeArea(
         child: Scaffold(
           appBar: AppBar(),
-          body: Center(
-            child: SizedBox(
-              width: 200,
-              height: 100,
-              child: TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const TrashSelection()),
-                  );
-                },
-                style: TextButton.styleFrom(backgroundColor: Colors.blue),
-                child: Text(
-                  "go to page 2",
-                  style: TextStyle(fontSize: 30),
-                ),
-              ),
-            ),
+          body: PageView(
+            controller: pCont,
+            physics: NeverScrollableScrollPhysics(),
+            onPageChanged: (value) {
+              selectedPage = value;
+              setState(() {
+              });
+            },
+            children: [
+              TestPage(),
+              TrashSelection()
+            ],
           ),
-          bottomNavigationBar: NavBar(),
+          bottomNavigationBar: NavBar(onTabChange: _onTabChange),
         ),
       ),
       debugShowCheckedModeBanner: false,
@@ -59,8 +50,10 @@ class _MainAppState extends State<MainApp> {
 }
 
 class NavBar extends StatelessWidget {
+  final Function(int) onTabChange;
   const NavBar({
     super.key,
+    required this.onTabChange
   });
 
   @override
@@ -79,15 +72,7 @@ class NavBar extends StatelessWidget {
           padding: EdgeInsets.all(25),
           tabBorderRadius: 15,
           iconSize: 20,
-          onTabChange: (index) {
-            if (index == 1) {
-              Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const TrashSelection()),
-                  );
-            }
-          },
+          onTabChange: onTabChange,
           tabs: [
             GButton(
               icon: Icons.home,
