@@ -2,6 +2,65 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 
+class MyElevatedButton extends StatefulWidget {
+  final BorderRadiusGeometry? borderRadius;
+  final double? width;
+  final double height;
+  final Gradient gradient;
+  final VoidCallback? onPressed;
+  final Widget child;
+  final bool buttonState;
+
+  final LinearGradient buttonColour = const LinearGradient(colors: [
+    Color.fromARGB(255, 186, 185, 185),
+    Color.fromARGB(255, 247, 243, 243)
+  ]);
+
+  final LinearGradient selectedButtonColour = const LinearGradient(colors: [
+    Color.fromARGB(255, 61, 243, 73),
+    Color.fromARGB(255, 156, 243, 132)
+  ]);
+  const MyElevatedButton(
+      {super.key,
+      required this.onPressed,
+      required this.child,
+      required this.buttonState,
+      this.borderRadius,
+      this.width,
+      this.height = 44.0,
+      this.gradient = const LinearGradient(colors: [
+        Color.fromARGB(255, 186, 185, 185),
+        Color.fromARGB(255, 247, 243, 243)
+      ])});
+
+  @override
+  State<MyElevatedButton> createState() => _MyElevatedButtonState();
+}
+
+class _MyElevatedButtonState extends State<MyElevatedButton> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: widget.width,
+      height: widget.height,
+      decoration: BoxDecoration(
+          gradient: widget.buttonState
+              ? widget.selectedButtonColour
+              : widget.buttonColour,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all()),
+      child: ElevatedButton(
+        onPressed: widget.onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+        ),
+        child: widget.child,
+      ),
+    );
+  }
+}
+
 class ChatBot extends StatefulWidget {
   const ChatBot({super.key});
 
@@ -10,9 +69,14 @@ class ChatBot extends StatefulWidget {
 }
 
 class _ChatBotState extends State<ChatBot> {
+  bool glassState = false;
+  bool plasticState = false;
+  bool paperState = false;
+  bool anySelected = false;
+
   final TextEditingController _userInput = TextEditingController();
   final apiKey = 'AIzaSyAdMqSVmk1Jv5W_qj25x92eUk8h7cHgkS0';
-  String? response = "placeholder";
+  String? response = "Generated text will be displayed here";
 
   Future<String?> talkWithGemini(String userInput) async {
     final model = GenerativeModel(
@@ -40,28 +104,80 @@ class _ChatBotState extends State<ChatBot> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final screenHeight = MediaQuery.sizeOf(context).height;
+
     return MaterialApp(
       home: SafeArea(
         child: Scaffold(
           body: Center(
             child: Column(
               children: [
-                Container(
-                    width: 400,
-                    height: 500,
-                    decoration: BoxDecoration(border: Border.all()),
-                    child: Text(response ?? "")),
+                Text(
+                  "What are you recycling?",
+                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+                ),
+                Padding(padding: EdgeInsets.only(top: 20)),
+                Row(
+                  children: [
+                    SizedBox(width: 10),
+                    Expanded(
+                        child: MyElevatedButton(
+                            buttonState: glassState,
+                            onPressed: () {
+                              setState(() {
+                                glassState = !glassState;
+                              });
+                            },
+                            child: Text("GLASS"))),
+                    SizedBox(width: 20),
+                    Expanded(
+                        child: MyElevatedButton(
+                            buttonState: plasticState,
+                            onPressed: () {
+                              setState(() {
+                                plasticState = !plasticState;
+                              });
+                            },
+                            child: Text("PLASTIC"))),
+                    SizedBox(width: 20),
+                    Expanded(
+                        child: MyElevatedButton(
+                            buttonState: paperState,
+                            onPressed: () {
+                              setState(() {
+                                paperState = !paperState;
+                              });
+                            },
+                            child: Text("PAPER"))),
+                    SizedBox(width: 10),
+                  ],
+                ),
                 Padding(padding: EdgeInsets.only(top: 50)),
-                SizedBox(
+                Padding(
+                  padding: const EdgeInsets.only(left: 300, bottom: 8),
+                  child: Container(
+                    width: 100,
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all()),
+                    child: TextButton(
+                        onPressed: () {},
+                        child: Text(
+                          "Send",
+                          style: TextStyle(fontSize: 20),
+                        )),
+                  ),
+                ),
+                Container(
                   width: 400,
-                  child: TextField(
-                    controller: _userInput,
-                    decoration: InputDecoration(border: OutlineInputBorder()),
+                  height: 500,
+                  decoration: BoxDecoration(border: Border.all()),
+                  child: SingleChildScrollView(
+                    child: Text(response ?? ""),
                   ),
                 ),
                 Padding(padding: EdgeInsets.only(top: 50)),
-                ElevatedButton(
-                    onPressed: _sendMessage, child: Text("Send")),
               ],
             ),
           ),
