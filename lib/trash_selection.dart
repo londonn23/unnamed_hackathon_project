@@ -1,6 +1,6 @@
 // import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'main.dart';
+// import 'main.dart';
 
 class TrashSelection extends StatefulWidget {
   const TrashSelection({super.key});
