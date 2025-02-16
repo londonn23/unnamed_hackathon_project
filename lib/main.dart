@@ -3,6 +3,7 @@ import 'package:unnamed_hackathon_project/chat.dart';
 import 'package:unnamed_hackathon_project/test_page.dart';
 import 'trash_selection.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
+import 'add.dart';
 
 void main() {
   runApp(MaterialApp(home: MainApp()));
@@ -40,7 +41,8 @@ class _MainAppState extends State<MainApp> {
             children: [
               TestPage(),
               TrashSelection(),
-              ChatBot()
+              ChatBot(),
+              AddPage()
             ],
           ),
           bottomNavigationBar: NavBar(onTabChange: _onTabChange),

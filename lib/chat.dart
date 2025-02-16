@@ -210,7 +210,8 @@ class _ChatBotState extends State<ChatBot> {
                       width: 100,
                       decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all()),
+                          border: Border.all(),
+                          color: Color.fromRGBO(180, 202, 164, 1.0)),
                       child: TextButton(
                           onPressed: () {
                             if (glassState == true ||
